@@ -32,7 +32,7 @@ NOME_ABA = "Página1"
 
 # ── Conexão com o Sheets ──────────────────────────────────────────────────────
 
-def _conectar() -> gspread.Worksheet:
+'''def _conectar() -> gspread.Worksheet:
     """
     Conecta ao Sheets lendo as credenciais de duas formas:
     - Em produção (Railway): lê da variável de ambiente GOOGLE_CREDENTIALS
@@ -48,6 +48,26 @@ def _conectar() -> gspread.Worksheet:
         credenciais = Credentials.from_service_account_info(info, scopes=SCOPES)
     else:
         # Desenvolvimento local: lê do arquivo
+        caminho = os.path.join(os.path.dirname(__file__), "credenciais.json")
+        credenciais = Credentials.from_service_account_file(caminho, scopes=SCOPES)
+
+    cliente = gspread.authorize(credenciais)
+    planilha = cliente.open_by_key(SPREADSHEET_ID)
+    return planilha.worksheet(NOME_ABA)'''
+def _conectar() -> gspread.Worksheet:
+    credenciais_json = os.environ.get("GOOGLE_CREDENTIALS")
+
+    if credenciais_json:
+        try:
+            info = json.loads(credenciais_json)
+            credenciais = Credentials.from_service_account_info(info, scopes=SCOPES)
+        except json.JSONDecodeError as e:
+            # Vai aparecer nos logs do Railway com o detalhe do erro
+            logger.error(f"Erro ao parsear GOOGLE_CREDENTIALS: {e}")
+            logger.error(f"Primeiros 100 caracteres da variável: {credenciais_json[:100]}")
+            raise
+    else:
+        logger.error("Variável GOOGLE_CREDENTIALS não encontrada no ambiente!")
         caminho = os.path.join(os.path.dirname(__file__), "credenciais.json")
         credenciais = Credentials.from_service_account_file(caminho, scopes=SCOPES)
 

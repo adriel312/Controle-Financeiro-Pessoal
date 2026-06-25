@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 from datetime import datetime
 
 import gspread                                      # biblioteca para manipular Google Sheets

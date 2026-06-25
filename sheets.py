@@ -34,20 +34,24 @@ NOME_ABA = "Página1"
 
 def _conectar() -> gspread.Worksheet:
     """
-    Cria e retorna a conexão com a aba da planilha.
-    Chamada a cada gravação para evitar problemas com tokens expirados
-    em bots que ficam rodando por dias sem reiniciar.
+    Conecta ao Sheets lendo as credenciais de duas formas:
+    - Em produção (Railway): lê da variável de ambiente GOOGLE_CREDENTIALS
+    - Em desenvolvimento (local): lê do arquivo credenciais.json
+    Isso permite que o mesmo código funcione nos dois ambientes.
     """
-    # Carrega as credenciais do arquivo JSON com os escopos definidos acima
-    credenciais = Credentials.from_service_account_file(
-        CREDENCIAIS_PATH,
-        scopes=SCOPES
-    )
+    credenciais_json = os.environ.get("GOOGLE_CREDENTIALS")
 
-    # Autoriza o cliente gspread com essas credenciais
+    if credenciais_json:
+        # Produção: carrega direto da variável de ambiente
+        # json.loads converte a string JSON em dicionário Python
+        info = json.loads(credenciais_json)
+        credenciais = Credentials.from_service_account_info(info, scopes=SCOPES)
+    else:
+        # Desenvolvimento local: lê do arquivo
+        caminho = os.path.join(os.path.dirname(__file__), "credenciais.json")
+        credenciais = Credentials.from_service_account_file(caminho, scopes=SCOPES)
+
     cliente = gspread.authorize(credenciais)
-
-    # Abre a planilha pelo ID e retorna a aba pelo nome
     planilha = cliente.open_by_key(SPREADSHEET_ID)
     return planilha.worksheet(NOME_ABA)
 

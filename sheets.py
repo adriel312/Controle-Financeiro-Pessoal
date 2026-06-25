@@ -2,6 +2,7 @@ import os
 import logging
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import gspread                                      # biblioteca para manipular Google Sheets
 from google.oauth2.service_account import Credentials   # autenticação via conta de serviço
@@ -91,7 +92,7 @@ def salvar_gasto(gasto: dict) -> bool:
         aba = _conectar()
 
         # Captura o momento exato do registro
-        agora = datetime.now()
+        agora = datetime.now(ZoneInfo("America/Sao_Paulo"))
         data = agora.strftime("%d/%m/%Y")   # formato brasileiro: 24/06/2025
         hora = agora.strftime("%H:%M:%S")   # formato 24h: 16:05:42
 
